@@ -9,12 +9,12 @@ use File::HomeDir;
 use Dist::Zilla::Util;
 
 with(
-	'Dist::Zilla::Role::MetaProvider' => { -version => '4.102345' },
-	'Dist::Zilla::Role::FileMunger' => { -version => '4.102345' },
-	'Dist::Zilla::Role::FileFinderUser' => {
-		-version => '4.102345',
-		default_finders => [ ':InstallModules', ':ExecFiles' ],
-	},
+    'Dist::Zilla::Role::MetaProvider'   => { -version => '4.102345' },
+    'Dist::Zilla::Role::FileMunger'     => { -version => '4.102345' },
+    'Dist::Zilla::Role::FileFinderUser' => {
+        -version        => '4.102345',
+        default_finders => [ ':InstallModules', ':ExecFiles' ],
+    },
     'Dist::Zilla::Role::PPI' => { -version => '4.300001' },
 );
 
@@ -29,45 +29,45 @@ If you prefer to not put it in config/dist.ini you can put it in "~/.pause" just
 =cut
 
 {
-	use Moose::Util::TypeConstraints 1.01;
+  use Moose::Util::TypeConstraints 1.01;
 
-	has authority => (
-		is => 'ro',
-		isa => subtype( 'Str'
-			=> where { $_ =~ /^\w+\:\S+$/ }
-			=> message { "Authority must be in the form of 'cpan:PAUSEID'" }
-		),
-		lazy => 1,
-		default => sub {
-			my $self = shift;
-			my $stash = $self->zilla->stash_named( '%PAUSE' );
-			if ( defined $stash ) {
-				$self->log_debug( [ 'using PAUSE id "%s" for AUTHORITY from Dist::Zilla config', uc( $stash->username ) ] );
-				return 'cpan:' . uc( $stash->username );
-			} else {
-				# Argh, try the .pause file?
-				# Code ripped off from Dist::Zilla::Plugin::UploadToCPAN v4.200001 - thanks RJBS!
-				my $file = File::Spec->catfile( File::HomeDir->my_home, '.pause' );
-				if ( -f $file ) {
-					open my $fh, '<', $file or $self->log_fatal( "Unable to open $file - $!" );
-					while (<$fh>) {
-						next if /^\s*(?:#.*)?$/;
-						my ( $k, $v ) = /^\s*(\w+)\s+(.+)$/;
-						if ( $k =~ /^user$/i ) {
-							$self->log_debug( [ 'using PAUSE id "%s" for AUTHORITY from ~/.pause', uc( $v ) ] );
-							return 'cpan:' . uc( $v );
-						}
-					}
-					close $fh or $self->log_fatal( "Unable to close $file - $!" );
-					$self->log_fatal( 'PAUSE user not found in ~/.pause' );
-				} else {
-					$self->log_fatal( 'PAUSE credentials not found in "config.ini" or "dist.ini" or "~/.pause"! Please set it or specify an authority for this plugin.' );
-				}
-			}
-		},
-	);
+  has authority => (
+    is => 'ro',
+    isa => subtype( 'Str'
+      => where { $_ =~ /^\w+\:\S+$/ }
+      => message { "Authority must be in the form of 'cpan:PAUSEID'" }
+    ),
+    lazy => 1,
+    default => sub {
+      my $self = shift;
+      my $stash = $self->zilla->stash_named( '%PAUSE' );
+      if ( defined $stash ) {
+        $self->log_debug( [ 'using PAUSE id "%s" for AUTHORITY from Dist::Zilla config', uc( $stash->username ) ] );
+        return 'cpan:' . uc( $stash->username );
+      } else {
+        # Argh, try the .pause file?
+        # Code ripped off from Dist::Zilla::Plugin::UploadToCPAN v4.200001 - thanks RJBS!
+        my $file = File::Spec->catfile( File::HomeDir->my_home, '.pause' );
+        if ( -f $file ) {
+          open my $fh, '<', $file or $self->log_fatal( "Unable to open $file - $!" );
+          while (<$fh>) {
+            next if /^\s*(?:#.*)?$/;
+            my ( $k, $v ) = /^\s*(\w+)\s+(.+)$/;
+            if ( $k =~ /^user$/i ) {
+              $self->log_debug( [ 'using PAUSE id "%s" for AUTHORITY from ~/.pause', uc( $v ) ] );
+              return 'cpan:' . uc( $v );
+            }
+          }
+          close $fh or $self->log_fatal( "Unable to close $file - $!" );
+          $self->log_fatal( 'PAUSE user not found in ~/.pause' );
+        } else {
+          $self->log_fatal( 'PAUSE credentials not found in "config.ini" or "dist.ini" or "~/.pause"! Please set it or specify an authority for this plugin.' );
+        }
+      }
+    },
+  );
 
-	no Moose::Util::TypeConstraints;
+    no Moose::Util::TypeConstraints;
 }
 
 =attr do_metadata
@@ -79,9 +79,9 @@ Defaults to true.
 =cut
 
 has do_metadata => (
-	is => 'ro',
-	isa => 'Bool',
-	default => 1,
+    is      => 'ro',
+    isa     => 'Bool',
+    default => 1,
 );
 
 =attr do_munging
@@ -93,9 +93,9 @@ Defaults to true.
 =cut
 
 has do_munging => (
-	is => 'ro',
-	isa => 'Bool',
-	default => 1,
+    is      => 'ro',
+    isa     => 'Bool',
+    default => 1,
 );
 
 =attr locate_comment
@@ -113,164 +113,165 @@ Defaults to false.
 =cut
 
 has locate_comment => (
-	is => 'ro',
-	isa => 'Bool',
-	default => 0,
+    is      => 'ro',
+    isa     => 'Bool',
+    default => 0,
 );
 
 sub metadata {
-	my( $self ) = @_;
+    my ($self) = @_;
 
-	return if ! $self->do_metadata;
+    return if !$self->do_metadata;
 
-	$self->log_debug( 'adding AUTHORITY to metadata' );
+    $self->log_debug('adding AUTHORITY to metadata');
 
-	return {
-		'x_authority'	=> $self->authority,
-	};
+    return { 'x_authority' => $self->authority, };
 }
 
 sub munge_files {
-	my( $self ) = @_;
+    my ($self) = @_;
 
-	return if ! $self->do_munging;
+    return if !$self->do_munging;
 
-	$self->_munge_file( $_ ) for @{ $self->found_files };
+    $self->_munge_file($_) for @{ $self->found_files };
 }
 
 sub _munge_file {
-	my( $self, $file ) = @_;
+    my ( $self, $file ) = @_;
 
-	return $self->_munge_perl($file) if $file->name    =~ /\.(?:pm|pl)$/i;
-	return $self->_munge_perl($file) if $file->content =~ /^#!(?:.*)perl(?:$|\s)/;
-	return;
+    return $self->_munge_perl($file) if $file->name =~ /\.(?:pm|pl)$/i;
+    return $self->_munge_perl($file)
+      if $file->content =~ /^#!(?:.*)perl(?:$|\s)/;
+    return;
 }
 
 # create an 'our' style assignment string of Perl code
 # ->_template_our_authority({
 #       whitespace => 'some white text preceeding the our',
-#		authority  => 'the author to assign authority to',
+#   authority  => 'the author to assign authority to',
 #       comment    => 'original comment string',
 # })
 sub _template_our_authority {
-	my $variable = "AUTHORITY";
-	return sprintf qq[%sour \$%s = '%s'; %s\n], $_[1]->{whitespace}, $variable, $_[1]->{authority}, $_[1]->{comment};
+    my $variable = "AUTHORITY";
+    return sprintf qq[%sour \$%s = '%s'; %s\n], $_[1]->{whitespace}, $variable,
+      $_[1]->{authority}, $_[1]->{comment};
 }
 
 # create a 'pkg' style assignment string of Perl code
 # ->_template_pkg_authority({
-#		package => 'the package the variable is to be created in',
+#   package => 'the package the variable is to be created in',
 #       authority => 'the author to assign authority to',
 # })
 sub _template_pkg_authority {
-	my $variable = sprintf "%s::AUTHORITY", $_[1]->{package};
-	return sprintf qq[BEGIN {\n  \$%s = '%s';\n}\n], $variable, $_[1]->{authority};
+    my $variable = sprintf "%s::AUTHORITY", $_[1]->{package};
+    return sprintf qq[BEGIN {\n  \$%s = '%s';\n}\n], $variable,
+      $_[1]->{authority};
 }
 
 # Generate a PPI Element containing a pkg AUTHORITY assignment for $package
 sub _make_pkg_authority {
-	my ( $self, $package ) = @_;
-	my $perl = $self->_template_pkg_authority({ package => $package, authority => $self->authority });
-	my $doc = PPI::Document->new( \$perl );
-	my @children = $doc->schildren;
-	return $children[0]->clone;
+    my ( $self, $package ) = @_;
+    my $perl = $self->_template_pkg_authority(
+        { package => $package, authority => $self->authority } );
+    my $doc      = PPI::Document->new( \$perl );
+    my @children = $doc->schildren;
+    return $children[0]->clone;
 }
 
 # Insert an AUTHORITY assignment inside a <package $package { }> declaration( $block )
 sub _inject_pkg_block_authority {
-	my ( $self, $file, $block, $package ) = @_ ;
-	$self->log_debug( [ 'Inserting inside a package NAME BLOCK statement' ] );
-	unshift $block->{children},
-		PPI::Token::Whitespace->new("\n"),
-		$self->_make_pkg_authority( $package ),
-		PPI::Token::Whitespace->new("\n");
-	return;
+    my ( $self, $file, $block, $package ) = @_;
+    $self->log_debug( ['Inserting inside a package NAME BLOCK statement'] );
+    unshift $block->{children},
+      PPI::Token::Whitespace->new("\n"),
+      $self->_make_pkg_authority($package),
+      PPI::Token::Whitespace->new("\n");
+    return;
 }
 
 # Insert an AUTHORITY assignment immediately after the <package $package> declaration ( $stmt )
 sub _inject_pkg_plain_authority {
-	my ( $self, $file, $stmt, $package ) = @_ ;
-	$self->log_debug( [ 'Inserting after a plain package declaration' ] );
-	Carp::carp( "error inserting AUTHORITY in " . $file->name )
-		unless $stmt->insert_after( $self->_make_pkg_authority($package) )
-		and    $stmt->insert_after( PPI::Token::Whitespace->new("\n") );
+    my ( $self, $file, $stmt, $package ) = @_;
+    $self->log_debug( ['Inserting after a plain package declaration'] );
+    Carp::carp( "error inserting AUTHORITY in " . $file->name )
+      unless $stmt->insert_after( $self->_make_pkg_authority($package) )
+      and $stmt->insert_after( PPI::Token::Whitespace->new("\n") );
 }
-
 
 # Replace the content of $line with an AUTHORITY assignment, preceeded by $ws, succeeded by $comment
 sub _replace_authority_comment {
-	my ( $self, $file, $line, $ws, $comment ) = @_ ;
-	$self->log_debug( [ 'adding $AUTHORITY assignment to line %d in %s', $line->line_number, $file->name ] );
-	$line->set_content(
-			$self->_template_our_authority({ whitespace => $ws, authority => $self->authority, comment => $comment })
-	);
-	return;
+    my ( $self, $file, $line, $ws, $comment ) = @_;
+    $self->log_debug( [ 'adding $AUTHORITY assignment to line %d in %s', $line->line_number, $file->name ] );
+    $line->set_content(
+        $self->_template_our_authority({ whitespace => $ws, authority => $self->authority, comment => $comment }),
+    );
+    return;
 }
 
 # Uses # AUTHORITY comments to work out where to put declarations
 sub _munge_perl_authority_comments {
-	my ( $self, $document, $file ) = @_ ;
+    my ( $self, $document, $file ) = @_;
 
-	my $comments = $document->find('PPI::Token::Comment');
+    my $comments = $document->find('PPI::Token::Comment');
 
-	return unless ref $comments;
+    return unless ref $comments;
 
-	return unless ref $comments eq 'ARRAY';
+    return unless ref $comments eq 'ARRAY';
 
-	my $found_authority = 0;
+    my $found_authority = 0;
 
-	foreach my $line ( @$comments ) {
-		next unless $line =~ /^(\s*)(\#\s+AUTHORITY\b)$/xms;
-		$self->_replace_authority_comment( $file, $line, $1, $2 );
-		$found_authority = 1;
-	}
-    if (  not $found_authority ) {
-		$self->log( [ 'skipping %s: consider adding a "# AUTHORITY" comment', $file->name ] );
-		return;
-	}
+    foreach my $line (@$comments) {
+        next unless $line =~ /^(\s*)(\#\s+AUTHORITY\b)$/xms;
+        $self->_replace_authority_comment( $file, $line, $1, $2 );
+        $found_authority = 1;
+    }
+    if ( not $found_authority ) {
+        $self->log( [ 'skipping %s: consider adding a "# AUTHORITY" comment', $file->name ] );
+        return;
+    }
 
-	$self->save_ppi_document_to_file( $document, $file );
-	return 1;
+    $self->save_ppi_document_to_file( $document, $file );
+    return 1;
 }
 
 # Places Fully Qualified $AUTHORITY values in packages
 sub _munge_perl_packages {
-	my ( $self, $document, $file ) = @_ ;
+    my ( $self, $document, $file ) = @_;
 
-	return unless my $package_stmts = $document->find( 'PPI::Statement::Package' );
+    return
+      unless my $package_stmts = $document->find('PPI::Statement::Package');
 
-	my %seen_pkgs;
+    my %seen_pkgs;
 
-	for my $stmt ( @$package_stmts ) {
-		my $package = $stmt->namespace;
+    for my $stmt (@$package_stmts) {
+        my $package = $stmt->namespace;
 
-		# Thanks to rafl ( Florian Ragwitz ) for this
-		if ( $seen_pkgs{ $package }++ ) {
-			$self->log( [ 'skipping package re-declaration for %s', $package ] );
-			next;
-		};
+        # Thanks to rafl ( Florian Ragwitz ) for this
+        if ( $seen_pkgs{$package}++ ) {
+            $self->log( [ 'skipping package re-declaration for %s', $package ] );
+            next;
+        }
 
-		# Thanks to autarch ( Dave Rolsky ) for this
-		if ( $stmt->content =~ /package\s*(?:#.*)?\n\s*\Q$package/ ) {
-			$self->log( [ 'skipping private package %s', $package ] );
-			next;
-		}
-		$self->log_debug( [ 'adding $AUTHORITY assignment to %s in %s', $package, $file->name ] );
+        # Thanks to autarch ( Dave Rolsky ) for this
+        if ( $stmt->content =~ /package\s*(?:#.*)?\n\s*\Q$package/ ) {
+            $self->log( [ 'skipping private package %s', $package ] );
+            next;
+        }
+        $self->log_debug( [ 'adding $AUTHORITY assignment to %s in %s', $package, $file->name ] );
 
-		if( my $block = $stmt->find_first('PPI::Structure::Block') ) {
-			$self->_inject_pkg_block_authority( $file, $block, $package );
-			next;
-		}
-		$self->_inject_pkg_plain_authority( $file, $stmt, $package );
-		next;
-	}
+        if ( my $block = $stmt->find_first('PPI::Structure::Block') ) {
+            $self->_inject_pkg_block_authority( $file, $block, $package );
+            next;
+        }
+        $self->_inject_pkg_plain_authority( $file, $stmt, $package );
+        next;
+    }
     $self->save_ppi_document_to_file( $document, $file );
 
 }
 
-
 sub _munge_perl {
-	my( $self, $file ) = @_;
+    my ( $self, $file ) = @_;
 
     my $document = $self->ppi_document_for_file($file);
 
@@ -279,17 +280,14 @@ sub _munge_perl {
         return;
     }
 
-	# Should we use the comment to insert the $AUTHORITY or the pkg declaration?
-	if ( $self->locate_comment ) {
-		return  $self->_munge_perl_authority_comments($document, $file);
-	} else {
-		return $self->_munge_perl_packages( $document, $file );
-	}
+    # Should we use the comment to insert the $AUTHORITY or the pkg declaration?
+    if ( $self->locate_comment ) {
+        return $self->_munge_perl_authority_comments( $document, $file );
+    }
+    else {
+        return $self->_munge_perl_packages( $document, $file );
+    }
 }
-
-
-
-
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
@@ -307,18 +305,18 @@ This plugin adds the authority data to your distribution. It adds the data to yo
 looks for the PAUSE author id in your L<Dist::Zilla> configuration. If you want to override it, please use the 'authority'
 attribute.
 
-	# In your dist.ini:
-	[Authority]
+  # In your dist.ini:
+  [Authority]
 
 This code will be added to any package declarations in your perl files:
 
-	BEGIN {
-	  $Dist::Zilla::Plugin::Authority::AUTHORITY = 'cpan:APOCAL';
-	}
+  BEGIN {
+    $Dist::Zilla::Plugin::Authority::AUTHORITY = 'cpan:APOCAL';
+  }
 
 Your metadata ( META.yml or META.json ) will have an entry looking like this:
 
-	x_authority => 'cpan:APOCAL'
+  x_authority => 'cpan:APOCAL'
 
 =head1 SEE ALSO
 Dist::Zilla
